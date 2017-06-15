@@ -1,20 +1,13 @@
 package com.company;
 
-import com.sun.org.apache.regexp.internal.RE;
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.Buffer;
 import java.security.CodeSource;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Main {
-    //public static final String PATHTOFOLDER = "U:\\_downloads\\_edit\\temp";
     public static String PATHTOFOLDER = "";
     public static final String[] palettes = {"full","diff"};
     public static final String[] dithers = {
