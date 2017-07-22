@@ -2,6 +2,8 @@ package com.company;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URISyntaxException;
@@ -26,7 +28,7 @@ public class Main {
     public static FilenameFilter textFilter = new FilenameFilter() {
         public boolean accept(File dir, String name) {
             String lowercaseName = name.toLowerCase();
-            if (!lowercaseName.contains(".exe")) {
+            if (!lowercaseName.contains(".exe") && !lowercaseName.contains(".jar")) {
                 return true;
             } else {
                 return false;
@@ -53,7 +55,7 @@ public class Main {
         RenameFiles(listOfFiles, format);
         listOfFiles = folder.listFiles(textFilter);
 
-        fullCommand += "&& U: ";
+        fullCommand += "&& "+PATHTOFOLDER.substring(0,1)+": ";
         fullCommand += "&& cd \""+PATHTOFOLDER+"\" ";
 
         if (!CheckSizes(listOfFiles)) { ResizeFiles(listOfFiles,format); }
@@ -64,6 +66,10 @@ public class Main {
         fullCommand += "&& del palette*.* ";
 
         fullCommand += "&& type nul > "+firstFileName.substring(0,firstFileName.length()-4)+".txt ";
+
+        StringSelection selection = new StringSelection(firstFileName.substring(0,firstFileName.length()-4));
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(selection, selection);
 
         System.out.println(fullCommand);
         SendCmd(fullCommand);
