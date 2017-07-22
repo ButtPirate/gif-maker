@@ -36,7 +36,6 @@ public class Main {
         }
     };
 
-
     public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException {
 
         CodeSource codeSource = Main.class.getProtectionDomain().getCodeSource();
@@ -59,6 +58,9 @@ public class Main {
         fullCommand += "&& cd \""+PATHTOFOLDER+"\" ";
 
         if (!CheckSizes(listOfFiles)) { ResizeFiles(listOfFiles,format); }
+        listOfFiles = folder.listFiles();
+
+        BigFiles(listOfFiles, format);
         listOfFiles = folder.listFiles();
 
         MakePalettes(format);
@@ -123,12 +125,12 @@ public class Main {
             BufferedImage image = ImageIO.read(x);
             if (image.getWidth() != width || image.getHeight() != height) {
                 return false;
+
             }
 
         }
+
         return true;
-
-
 
     }
 
@@ -145,7 +147,7 @@ public class Main {
 
     public static void ResizeFiles(File[] listOfFiles, String format) throws IOException, InterruptedException {
         Dimension minRes = FindSmalestFile(listOfFiles);
-        fullCommand += "&& for %f in (%03d."+format+") do ffmpeg -i %f -vf \"scale="+(int) minRes.getWidth()+":"+(int) minRes.getHeight()+", format=rgba\" %f -y ";
+        fullCommand += "&& for %f in (%03d."+format+") do ffmpeg -i %f -q:v 1 -vf \"scale="+(int) minRes.getWidth()+":"+(int) minRes.getHeight()+", format=rgba\" %f -y ";
     }
 
     public static void MakePalettes(String format) throws IOException, InterruptedException {
@@ -163,6 +165,22 @@ public class Main {
                 i++;
 
             }
+        }
+
+    }
+
+    public static void BigFiles(File[] listOfFiles, String format) throws IOException {
+        BufferedImage firstImage = ImageIO.read(listOfFiles[0]);
+        long width=firstImage.getWidth(), height = firstImage.getHeight();
+
+        if (width>1920) {
+            fullCommand += "&& for %f in (%03d."+format+") do ffmpeg -i %f -q:v 1 -vf \"scale=1920:-1 , format=rgba\" %f -y ";
+
+        }
+
+        if (height>1080) {
+            fullCommand += "&& for %f in (%03d."+format+") do ffmpeg -i %f -q:v 1 -vf \"scale=-1:1080 , format=rgba\" %f -y ";
+
         }
 
     }
