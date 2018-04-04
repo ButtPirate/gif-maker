@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 /**
@@ -17,6 +18,24 @@ public class FileDAO {
     private String runningPath;
     private File folder;
     private List<File> targetImages;
+
+    //Static methods
+
+    /**
+     * Checks if all files in the list have the same file extension
+     *
+     * @param list - input list of files. Has to contain at least one file!
+     * @return - true if check passed, false if at least one file in the list has different extension
+     */
+    public static boolean checkExtension(List<File> list) {
+        String firstExtension = getExtension(list.get(0).getName());
+        for (File file : list) {
+            if (!getExtension(file.getName()).equals(firstExtension)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     //Class methods
 
@@ -37,19 +56,24 @@ public class FileDAO {
         };
 
         File[] files = this.getFolder().listFiles(FILENAME_FILTER);
-        if (files.length != 0) {
-            List<File> list = Arrays.asList(files);
-            Collections.sort(list, new Comparator<File>() {
-                private final Comparator<String> NATURAL_COMPARATOR = new WindowsExplorerStringComparator();
-
-                public int compare(File o1, File o2) {
-                    return NATURAL_COMPARATOR.compare(removeExtension(o1.getName()), removeExtension(o2.getName()));
-                }
-            });
-            return list;
-        } else {
+        if (files.length == 0) {
             throw new Exception("No image files were found in folder <" + this.getRunningPath() + ">!");
         }
+
+        List<File> list = Arrays.asList(files);
+
+        if (!checkExtension(list)) {
+            throw new Exception("Filenames has different extensions!");
+        }
+
+        Collections.sort(list, new Comparator<File>() {
+            private final Comparator<String> NATURAL_COMPARATOR = new WindowsExplorerStringComparator();
+
+            public int compare(File o1, File o2) {
+                return NATURAL_COMPARATOR.compare(removeExtension(o1.getName()), removeExtension(o2.getName()));
+            }
+        });
+        return list;
     }
 
     //Inner classes
