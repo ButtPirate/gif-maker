@@ -26,12 +26,10 @@ public class CmdDAO {
     public void sendCmd(String command) throws IOException, InterruptedException {
         String driveLetter = this.getFileDAO().getRunningPath().substring(0, 1);
         ProcessBuilder builder = new ProcessBuilder(
-                "cmd.exe", "/c", ""
-                + driveLetter
-                + ": && CD \""
-                + this.getFileDAO().getRunningPath()
-                + "\" && "
-                + command);
+                "cmd.exe", "/c", "" //launch CMD
+                + driveLetter + ": " //change to correct drive
+                + "&& CD \"" + this.getFileDAO().getRunningPath() + " " //CD to running path
+                + "&& " + command); //send command
         builder.redirectErrorStream(true);
         Process p = builder.start();
         BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream(), "866"));
