@@ -18,4 +18,11 @@ public class Config {
         return new ResourceDAO();
     }
 
+    @Bean
+    public CmdDAO cmdDAO() {
+        return new CmdDAO();
+    }
+
+    ;
+
 }
