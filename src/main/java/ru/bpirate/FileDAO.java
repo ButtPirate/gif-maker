@@ -1,8 +1,10 @@
 package ru.bpirate;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -19,15 +21,35 @@ public class FileDAO {
     private File folder;
     private List<File> targetImages;
 
-    //Static methods
+    //Class methods
+
+    /**
+     * Checks if all files in "targetImages" list have same sizes
+     *
+     * @return - false if at least one image has different height or width
+     * @throws IOException
+     */
+    public boolean checkSizes() throws IOException {
+        List<File> listOfFiles = this.getTargetImages();
+        BufferedImage firstImage = ImageIO.read(listOfFiles.get(0));
+        long width = firstImage.getWidth(), height = firstImage.getHeight();
+
+        for (File x : listOfFiles) {
+            BufferedImage image = ImageIO.read(x);
+            if (image.getWidth() != width || image.getHeight() != height) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * Checks if all files in the list have the same file extension
-     *
      * @param list - input list of files. Has to contain at least one file!
      * @return - true if check passed, false if at least one file in the list has different extension
      */
-    public static boolean checkExtension(List<File> list) {
+    private static boolean checkExtension(List<File> list) {
         String firstExtension = getExtension(list.get(0).getName());
         for (File file : list) {
             if (!getExtension(file.getName()).equals(firstExtension)) {
@@ -36,8 +58,6 @@ public class FileDAO {
         }
         return true;
     }
-
-    //Class methods
 
     /**
      * Returns list of images that were found in the folder
@@ -169,21 +189,11 @@ public class FileDAO {
     }
 
     //Constructors
-    public FileDAO() {
-        try {
-            this.setRunningPath(new File(ResourceDAO.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile().getPath().replace('\\', '/'));
-        } catch (URISyntaxException e) {
-            System.out.println("Can't get full path to running .jar!");
-            e.printStackTrace();
-        }
-
+    public FileDAO() throws Exception {
+        this.setRunningPath(new File(ResourceDAO.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile().getPath().replace('\\', '/'));
         this.setFolder(new File(this.getRunningPath()));
+        this.setTargetImages(this.listImages());
 
-        try {
-            this.setTargetImages(this.listImages());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     //GET- and SET-methods
