@@ -1,5 +1,7 @@
 package ru.bpirate;
 
+import org.apache.commons.io.FileUtils;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -21,6 +23,14 @@ public class FileDAO {
     private List<File> targetImages;
 
     //Class methods
+
+    public void backupFiles() throws IOException {
+        File backupFolder = new File(this.getRunningPath() + "\\backup");
+        backupFolder.mkdir();
+        for (File x : this.getTargetImages()) {
+            FileUtils.copyFileToDirectory(x, backupFolder);
+        }
+    }
 
     /**
      * Checks if all files in "targetImages" list have same sizes
