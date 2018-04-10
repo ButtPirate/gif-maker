@@ -17,8 +17,7 @@ import static org.apache.commons.io.FilenameUtils.removeExtension;
  * Created by Stef6 on 03/15/2018.
  */
 public class FileDAO {
-    private String runningPath;
-    private File folder;
+    private String runningPath; //in windows format, e.g. C:\Users\Bpirate\Desktop\folder-with-images
     private List<File> targetImages;
 
     //Class methods
@@ -74,8 +73,7 @@ public class FileDAO {
                 return lowercaseName.contains(".jpg") || lowercaseName.contains(".png") || lowercaseName.contains(".jpeg");
             }
         };
-
-        File[] files = this.getFolder().listFiles(FILENAME_FILTER);
+        File[] files = new File(this.getRunningPath()).listFiles(FILENAME_FILTER);
         if (files.length == 0) {
             throw new Exception("No image files were found in folder <" + this.getRunningPath() + ">!");
         }
@@ -191,7 +189,6 @@ public class FileDAO {
     //Constructors
     public FileDAO() throws Exception {
         this.setRunningPath(new File(ResourceDAO.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile().getPath().replace('\\', '/'));
-        this.setFolder(new File(this.getRunningPath()));
         this.setTargetImages(this.listImages());
 
     }
@@ -213,11 +210,4 @@ public class FileDAO {
         this.targetImages = targetImages;
     }
 
-    public File getFolder() {
-        return folder;
-    }
-
-    public void setFolder(File folder) {
-        this.folder = folder;
-    }
 }
