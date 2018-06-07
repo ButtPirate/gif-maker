@@ -1,12 +1,16 @@
 package ru.bpirate;
 
 import org.apache.commons.io.FileUtils;
+import ru.bpirate.exceptions.BackendException;
+import ru.bpirate.exceptions.FileException;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,67 +19,18 @@ import java.util.List;
 import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 
-/**
- * Created by Stef6 on 03/15/2018.
- */
-public class FileDAO {
-    private String runningPath; //in windows format, e.g. C:\Users\Bpirate\Desktop\folder-with-images
-    private List<File> targetImages;
+public class FileService {
 
-    //Class methods
-
-    public void backupFiles() throws IOException {
-        File backupFolder = new File(this.getRunningPath() + "\\backup");
-        backupFolder.mkdir();
-        for (File x : this.getTargetImages()) {
-            FileUtils.copyFileToDirectory(x, backupFolder);
-        }
-    }
-
-    /**
-     * Checks if all files in "targetImages" list have same sizes
-     *
-     * @return - false if at least one image has different height or width
-     * @throws IOException
-     */
-    public boolean checkSizes() throws IOException {
-        List<File> listOfFiles = this.getTargetImages();
-        BufferedImage firstImage = ImageIO.read(listOfFiles.get(0));
-        long width = firstImage.getWidth(), height = firstImage.getHeight();
-
-        for (File x : listOfFiles) {
-            BufferedImage image = ImageIO.read(x);
-            if (image.getWidth() != width || image.getHeight() != height) {
-                return false;
-            }
+    static String findParentFolder() throws BackendException {
+        try {
+            return new File(FileService.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile().getPath().replace('\\', '/');
+        } catch (URISyntaxException e) {
+            throw new BackendException("Could not get path to running .jar! ", e);
         }
 
-        return true;
     }
 
-    /**
-     * Checks if all files in the list have the same file extension
-     * @param list - input list of files. Has to contain at least one file!
-     * @return - true if check passed, false if at least one file in the list has different extension
-     */
-    private static boolean checkExtension(List<File> list) {
-        String firstExtension = getExtension(list.get(0).getName());
-        for (File file : list) {
-            if (!getExtension(file.getName()).equals(firstExtension)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Returns list of images that were found in the folder
-     * Attempts to sort them like in the explorer
-     *
-     * @return list of files
-     * @throws Exception - throws exception if no files were found
-     */
-    private List<File> listImages() throws Exception {
+    static List<File> listImages(String path) throws FileException {
 
         FilenameFilter FILENAME_FILTER = new FilenameFilter() {
             public boolean accept(File dir, String name) {
@@ -83,16 +38,12 @@ public class FileDAO {
                 return lowercaseName.contains(".jpg") || lowercaseName.contains(".png") || lowercaseName.contains(".jpeg");
             }
         };
-        File[] files = new File(this.getRunningPath()).listFiles(FILENAME_FILTER);
+        File[] files = new File(path).listFiles(FILENAME_FILTER);
         if (files.length == 0) {
-            throw new Exception("No image files were found in folder <" + this.getRunningPath() + ">!");
+            throw new FileException("No image files were found in folder <" + path + ">!", new Exception());
         }
 
         List<File> list = Arrays.asList(files);
-
-        if (!checkExtension(list)) {
-            throw new Exception("Filenames has different extensions!");
-        }
 
         Collections.sort(list, new Comparator<File>() {
             private final Comparator<String> NATURAL_COMPARATOR = new WindowsExplorerStringComparator();
@@ -104,8 +55,17 @@ public class FileDAO {
         return list;
     }
 
-    //Inner classes
-    class WindowsExplorerStringComparator implements Comparator<String> {
+    public static boolean checkExtension(List<File> list) {
+        String firstExtension = getExtension(list.get(0).getName());
+        for (File file : list) {
+            if (!getExtension(file.getName()).equals(firstExtension)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static class WindowsExplorerStringComparator implements Comparator<String> {
         private String str1, str2;
         private int pos1, pos2, len1, len2;
 
@@ -196,28 +156,63 @@ public class FileDAO {
         }
     }
 
-    //Constructors
-    public FileDAO() throws Exception {
-        this.setRunningPath(new File(ResourceDAO.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile().getPath().replace('\\', '/'));
-        this.setTargetImages(this.listImages());
-
+    public static void backupFiles(String runningPath, List<File> images) throws BackendException {
+        File backupFolder = new File(runningPath + "\\backup");
+        backupFolder.mkdir();
+        for (File x : images) {
+            try {
+                FileUtils.copyFileToDirectory(x, backupFolder);
+            } catch (IOException e) {
+                throw new BackendException("Something went wrong during backup", e);
+            }
+        }
     }
 
-    //GET- and SET-methods
-    public String getRunningPath() {
-        return runningPath;
+    public static boolean checkSizes(List<File> images) throws BackendException {
+        List<File> listOfFiles = images;
+        BufferedImage firstImage;
+        try {
+            firstImage = ImageIO.read(listOfFiles.get(0));
+        } catch (IOException e) {
+            throw new BackendException("Could not read image!", e);
+        }
+        long width = firstImage.getWidth();
+        long height = firstImage.getHeight();
+
+        for (File x : listOfFiles) {
+            BufferedImage image;
+            try {
+                image = ImageIO.read(x);
+            } catch (IOException e) {
+                throw new BackendException("Could not read image!", e);
+            }
+            if (image.getWidth() != width || image.getHeight() != height) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    public void setRunningPath(String runningPath) {
-        this.runningPath = runningPath;
-    }
+    public static Dimension findLowestDimension(List<File> listOfFiles) throws BackendException {
+        Dimension resolution = new Dimension();
+        long minRes = 0;
 
-    public List<File> getTargetImages() {
-        return targetImages;
-    }
+        for (File x : listOfFiles) {
+            BufferedImage bimg = null;
+            try {
+                bimg = ImageIO.read(x);
+            } catch (IOException e) {
+                throw new BackendException("Could not read image!", e);
+            }
+            long temp = bimg.getWidth() * bimg.getHeight();
+            if (temp < minRes || minRes == 0) {
+                minRes = temp;
+                resolution.setSize(bimg.getWidth(), bimg.getHeight());
+            }
+        }
 
-    public void setTargetImages(List<File> targetImages) {
-        this.targetImages = targetImages;
+        return resolution;
     }
 
 }
