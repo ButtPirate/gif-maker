@@ -36,26 +36,8 @@ public class Main {
             FFMPEGService.resizeFiles(targetImages, smallestDimension, pathToParentFolder);
         }
 
-
-
-
-
-
-
-        /*
-        План:
-            * Определяем путь до папки.
-            * Проверяем, что в папке есть изображения.
-            * Достаем все изображения в папке.
-            * Сортируем файлы в виндовом формате.
-            * Делаем резервную копию всех файлов в отдельную папку. <-
-            * Проверяем, что у всех изображений одинаковые размеры.
-            * * Если нет, то выбираем наименьшее и форматируем остальные под него.
-            * Распаковываем FFMPEG.
-            * FFMPEG CMD.
-            * Копируем имя первого файла в буфер обмена.
-            * Трем исходные файлы.
-         */
+        //generate palette files
+        List<File> palettes = FFMPEGService.createPalette(targetImages, pathToParentFolder);
 
     }
 

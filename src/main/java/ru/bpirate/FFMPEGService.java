@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 public class FFMPEGService {
@@ -34,4 +35,31 @@ public class FFMPEGService {
         }
 
     }
+
+    public static List<File> createPalette(List<File> targetImages, String runningPath) throws BackendException {
+        String[] palettes = {"diff", "full"}; //two different modes of palette generation
+
+        for (String currentPalette : palettes) { //for each mode
+            StringBuilder builder = new StringBuilder();
+            builder.append("ffmpeg -f image2 "); //call FFMPEG
+
+            for (File x : targetImages) { //all target images as input
+                builder.append("-i " + x.getName() + " ");
+            }
+
+            builder.append("-lavfi \"palettegen=stats_mode=" + currentPalette + "\" palette_" + currentPalette + ".png"); //current palette generation mode
+
+            CMDService.sendCmd(builder.toString(), runningPath); //send CMD commm=and
+        }
+
+        File[] paletteFiles = new File(runningPath).listFiles((dir, name) -> { //list all generated palette files
+            String lowercaseName = name.toLowerCase();
+            return lowercaseName.contains("palette");
+        });
+
+        return Arrays.asList(paletteFiles);
+
+
+    }
+
 }
