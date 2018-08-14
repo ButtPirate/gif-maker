@@ -71,13 +71,13 @@ public class FFMPEGService {
 
         List<File> result = new ArrayList<>();
 
+        FileService.formatImages(targetImages);
+
         for (File palette : palettes) { //for each palette
             for (DitherFilter ditherFilter : ditherFilters) { //for each dither mode
                 StringBuilder builder = new StringBuilder();
                 builder.append("ffmpeg -f image2 "); //call FFMPEG
                 builder.append("-r " + delay + " "); //images per second
-
-                FileService.formatImages(targetImages);
 
                 builder.append("-i %03d").append(".jpg").append(" "); //input files
 
