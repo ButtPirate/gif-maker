@@ -7,7 +7,7 @@ public enum DitherFilter {
     BAYER5("bayer:bayer_scale=5", "bayer_5"),
     FLOYDSTEINBERG("floyd_steinberg", "floyd"),
     SIERRA("sierra2", "sierra"),
-    SIERRA4A("sierra2_4a", "");
+    SIERRA4A("sierra2_4a", "sierra4a");
 
 
     private final String fullFilter;
