@@ -41,7 +41,15 @@ public class FFMPEGService {
     }
 
     public static List<File> createPalette(List<File> targetImages, String runningPath) throws BackendException {
-        String[] palettes = {"diff", "full"}; //two different modes of palette generation
+        List<String> palettes = new ArrayList<>();
+        String[] allPalettes = {"diff", "full"};
+        String[] bestPalettes = {"full"};
+
+        if (Main.args_fullFilters) {
+            palettes = Arrays.asList(allPalettes);
+        } else {
+            palettes = Arrays.asList(bestPalettes);
+        }
 
         for (String currentPalette : palettes) { //for each mode
             StringBuilder builder = new StringBuilder();
@@ -67,7 +75,14 @@ public class FFMPEGService {
     }
 
     public static List<File> createGifs(List<File> targetImages, List<File> palettes, String delay, String runningPath) throws BackendException {
-        DitherFilter[] ditherFilters = {NONE, BAYER1, BAYER2, BAYER5, FLOYDSTEINBERG, SIERRA, SIERRA4A};
+        List<DitherFilter> ditherFilters;
+        DitherFilter[] allDitherFilters = {NONE, BAYER1, BAYER2, BAYER5, FLOYDSTEINBERG, SIERRA, SIERRA4A};
+        DitherFilter[] bestDitherFilters = {NONE, BAYER5};
+        if (Main.args_fullFilters) {
+            ditherFilters = Arrays.asList(allDitherFilters);
+        } else {
+            ditherFilters = Arrays.asList(bestDitherFilters);
+        }
 
         List<File> result = new ArrayList<>();
 

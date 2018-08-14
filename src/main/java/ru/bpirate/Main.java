@@ -11,8 +11,12 @@ import java.util.List;
 public class Main {
     static String pathToParentFolder; //in windows format, e.g. C:\Users\Bpirate\Desktop\folder-with-images
     static List<File> targetImages;
+    public static boolean args_fullFilters = false;
+    public static String args_delay = "0.5";
 
     public static void main(String[] args) throws BackendException, FileException {
+        parseArgs(args);
+
         //Looking up path to running .jar
         pathToParentFolder = FileService.findParentFolder();
 
@@ -46,7 +50,7 @@ public class Main {
         //generate palette files
         List<File> palettes = FFMPEGService.createPalette(targetImages, pathToParentFolder);
 
-        List<File> createdGifs = FFMPEGService.createGifs(targetImages, palettes, "0.5", pathToParentFolder);
+        List<File> createdGifs = FFMPEGService.createGifs(targetImages, palettes, args_delay, pathToParentFolder);
 
         List<File> listedFiles = Arrays.asList(new File(pathToParentFolder).listFiles(((dir, name) -> !name.contains("gif-maker"))));
         listedFiles.removeAll(createdGifs);
@@ -54,6 +58,28 @@ public class Main {
 
         for (File fileToDelete : listedFiles) {
             fileToDelete.delete();
+        }
+
+    }
+
+    private static void parseArgs(String... args) {
+        try {
+            List<String> listArgs = Arrays.asList(args);
+
+            if (listArgs.contains("--all-filters") || listArgs.contains("-A")) {
+                args_fullFilters = true;
+            }
+
+            if (listArgs.contains("-D")) {
+                int indexOfOption = listArgs.indexOf("-D");
+                args_delay = listArgs.get(++indexOfOption);
+            }
+
+        } catch (Exception e) {
+            System.out.println("Caught error trying to parse command line args! Using defaults...");
+            System.out.println(e.toString());
+            args_fullFilters = false;
+            args_delay = "0.5";
         }
 
     }
