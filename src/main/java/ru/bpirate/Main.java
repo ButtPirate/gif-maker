@@ -1,9 +1,12 @@
 package ru.bpirate;
 
+import org.apache.commons.io.FilenameUtils;
 import ru.bpirate.exceptions.BackendException;
 import ru.bpirate.exceptions.FileException;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +25,8 @@ public class Main {
 
         //Listing images
         targetImages = FileService.listImages(pathToParentFolder);
+
+        String firstFilename = FilenameUtils.getBaseName(targetImages.get(0).getName());
 
         //Checking if all images have same extension
         if (!FileService.checkExtension(targetImages)) {
@@ -60,6 +65,8 @@ public class Main {
             fileToDelete.delete();
         }
 
+        setClipboardContent(firstFilename);
+
     }
 
     private static void parseArgs(String... args) {
@@ -82,6 +89,12 @@ public class Main {
             args_delay = "0.5";
         }
 
+    }
+
+    private static void setClipboardContent(String content) {
+        Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection stringSelection = new StringSelection(content);
+        clpbrd.setContents(stringSelection, null);
     }
 
 }
