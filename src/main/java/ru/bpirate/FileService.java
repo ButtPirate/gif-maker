@@ -235,7 +235,7 @@ public class FileService {
             } catch (IOException e) {
                 throw new BackendException("Could not read image!", e);
             }
-            if (image.getWidth() > 1980 || image.getHeight() > 1080) {
+            if (image.getWidth() > 1920 || image.getHeight() > 1080) {
                 return false;
             }
         }
