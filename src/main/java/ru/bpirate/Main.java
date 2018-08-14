@@ -34,7 +34,13 @@ public class Main {
         if (!FileService.checkSizes(targetImages)) {
             System.out.println("Resizing images!");
             Dimension smallestDimension = FileService.findLowestDimension(targetImages);
-            FFMPEGService.resizeFiles(targetImages, smallestDimension, pathToParentFolder);
+            FFMPEGService.resizeFilesToOneSize(targetImages, smallestDimension, pathToParentFolder);
+            targetImages = FileService.listImages(pathToParentFolder);
+        }
+
+        if (!FileService.checkImagesForBigFiles(targetImages)) {
+            FFMPEGService.resizeBigFiles(targetImages, pathToParentFolder);
+            targetImages = FileService.listImages(pathToParentFolder);
         }
 
         //generate palette files

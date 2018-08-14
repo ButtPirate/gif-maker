@@ -167,17 +167,16 @@ public class FileService {
     }
 
     public static boolean checkSizes(List<File> images) throws BackendException {
-        List<File> listOfFiles = images;
         BufferedImage firstImage;
         try {
-            firstImage = ImageIO.read(listOfFiles.get(0));
+            firstImage = ImageIO.read(images.get(0));
         } catch (IOException e) {
             throw new BackendException("Could not read image!", e);
         }
         long width = firstImage.getWidth();
         long height = firstImage.getHeight();
 
-        for (File x : listOfFiles) {
+        for (File x : images) {
             BufferedImage image;
             try {
                 image = ImageIO.read(x);
@@ -226,6 +225,23 @@ public class FileService {
             }
 
         }
+    }
+
+    public static boolean checkImagesForBigFiles(List<File> images) throws BackendException {
+        for (File x : images) {
+            BufferedImage image;
+            try {
+                image = ImageIO.read(x);
+            } catch (IOException e) {
+                throw new BackendException("Could not read image!", e);
+            }
+            if (image.getWidth() > 1980 || image.getHeight() > 1080) {
+                return false;
+            }
+        }
+
+        return true;
+
     }
 
 }

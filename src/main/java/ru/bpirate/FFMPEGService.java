@@ -16,7 +16,7 @@ import java.util.List;
 import static ru.bpirate.DitherFilter.*;
 
 public class FFMPEGService {
-    public static void resizeFiles(List<File> listOfFiles, Dimension smallestDimension, String runningPath) throws FileException, BackendException {
+    public static void resizeFilesToOneSize(List<File> listOfFiles, Dimension smallestDimension, String runningPath) throws FileException, BackendException {
         for (File x : listOfFiles) {
             BufferedImage image = null;
             try {
@@ -114,6 +114,45 @@ public class FFMPEGService {
         builder.append(".gif");
 
         return builder.toString();
+
+    }
+
+    public static void resizeBigFiles(List<File> listOfFiles, String runningPath) throws FileException, BackendException {
+        for (File x : listOfFiles) {
+            BufferedImage image = null;
+            try {
+                image = ImageIO.read(x);
+            } catch (IOException e) {
+                throw new FileException("Could not read file!", e);
+            }
+
+            if (image.getWidth() > 1920) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("ffmpeg "); //ffmpeg call
+                builder.append("-i " + x.getName() + " "); //input is the file
+                builder.append("-q:v 1 "); //quality scale - the best
+                builder.append("-vf \"scale=1920:-1:flags=lanczos" + ", format=rgba\" "); //resize filter
+                builder.append(x.getName() + " -y"); //replace original image with scaled
+                CMDService.sendCmd(builder.toString(), runningPath);
+
+                x = new File(x.getName());
+                try {
+                    image = ImageIO.read(x);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (image.getHeight() > 1080) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("ffmpeg "); //ffmpeg call
+                builder.append("-i " + x.getName() + " "); //input is the file
+                builder.append("-q:v 1 "); //quality scale - the best
+                builder.append("-vf \"scale=-1:1080:flags=lanczos" + ", format=rgba\" "); //resize filter
+                builder.append(x.getName() + " -y"); //replace original image with scaled
+                CMDService.sendCmd(builder.toString(), runningPath);
+            }
+        }
 
     }
 
