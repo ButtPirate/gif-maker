@@ -1,5 +1,6 @@
 package ru.bpirate;
 
+import org.apache.commons.io.FilenameUtils;
 import ru.bpirate.exceptions.BackendException;
 import ru.bpirate.exceptions.FileException;
 
@@ -8,8 +9,11 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static ru.bpirate.DitherFilter.*;
 
 public class FFMPEGService {
     public static void resizeFiles(List<File> listOfFiles, Dimension smallestDimension, String runningPath) throws FileException, BackendException {
@@ -49,7 +53,7 @@ public class FFMPEGService {
 
             builder.append("-lavfi \"palettegen=stats_mode=" + currentPalette + "\" palette_" + currentPalette + ".png"); //current palette generation mode
 
-            CMDService.sendCmd(builder.toString(), runningPath); //send CMD commm=and
+            CMDService.sendCmd(builder.toString(), runningPath); //send CMD command
         }
 
         File[] paletteFiles = new File(runningPath).listFiles((dir, name) -> { //list all generated palette files
@@ -59,6 +63,57 @@ public class FFMPEGService {
 
         return Arrays.asList(paletteFiles);
 
+
+    }
+
+    public static List<File> createGifs(List<File> targetImages, List<File> palettes, String delay, String runningPath) throws BackendException {
+        DitherFilter[] ditherFilters = {NONE, BAYER1, BAYER2, BAYER5, FLOYDSTEINBERG, SIERRA, SIERRA4A};
+
+        List<File> result = new ArrayList<>();
+
+        for (File palette : palettes) { //for each palette
+            for (DitherFilter ditherFilter : ditherFilters) { //for each dither mode
+                StringBuilder builder = new StringBuilder();
+                builder.append("ffmpeg -f image2 "); //call FFMPEG
+                builder.append("-r " + delay + " "); //images per second
+
+                FileService.formatImages(targetImages);
+
+                builder.append("-i %03d").append(".jpg").append(" "); //input files
+
+                builder.append("-i "+palette.getName() + " "); //palette input
+                builder.append("-lavfi \"paletteuse=dither="+ditherFilter.getFullFilter()+"\" "); //specify paletteuse dither filter
+                String outputFilename = generateFilename(palette, ditherFilter);
+                builder.append("-y ");
+                builder.append(outputFilename);
+
+                CMDService.sendCmd(builder.toString(), runningPath);
+
+                File createdGif = new File(runningPath + outputFilename);
+                result.add(createdGif);
+
+            }
+
+        }
+
+        return result;
+    }
+
+    /**
+     * Generate unique output filename based on combination of current palette and dither filter.
+     * @param palette
+     * @param filter
+     * @return
+     */
+    private static String generateFilename(File palette, DitherFilter filter) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("gif-maker_");
+        builder.append(FilenameUtils.getBaseName(palette.getName()));
+        builder.append("_");
+        builder.append(filter.getShortName());
+        builder.append(".gif");
+
+        return builder.toString();
 
     }
 

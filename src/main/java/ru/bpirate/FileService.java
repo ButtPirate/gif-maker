@@ -32,11 +32,9 @@ public class FileService {
 
     static List<File> listImages(String path) throws FileException {
 
-        FilenameFilter FILENAME_FILTER = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                String lowercaseName = name.toLowerCase();
-                return lowercaseName.contains(".jpg") || lowercaseName.contains(".png") || lowercaseName.contains(".jpeg");
-            }
+        FilenameFilter FILENAME_FILTER = (dir, name) -> {
+            String lowercaseName = name.toLowerCase();
+            return lowercaseName.contains(".jpg") || lowercaseName.contains(".png") || lowercaseName.contains(".jpeg");
         };
         File[] files = new File(path).listFiles(FILENAME_FILTER);
         if (files.length == 0) {
@@ -213,6 +211,21 @@ public class FileService {
         }
 
         return resolution;
+    }
+
+    public static void formatImages(List<File> targetImages) throws BackendException {
+        for (int i = 0; i < targetImages.size(); i++) {
+            try {
+                BufferedImage bufferedImage = ImageIO.read(targetImages.get(i));
+                BufferedImage newBufferedImage = new BufferedImage(bufferedImage.getWidth(),
+                        bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+                newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0, Color.WHITE, null);
+                ImageIO.write(newBufferedImage, "jpg", new File(String.format("%03d"+".jpg", i)));
+            } catch (IOException e) {
+                throw new BackendException("Could not convert images to .jpg!", e);
+            }
+
+        }
     }
 
 }

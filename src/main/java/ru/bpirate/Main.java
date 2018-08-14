@@ -5,6 +5,7 @@ import ru.bpirate.exceptions.FileException;
 
 import java.awt.*;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
@@ -38,6 +39,16 @@ public class Main {
 
         //generate palette files
         List<File> palettes = FFMPEGService.createPalette(targetImages, pathToParentFolder);
+
+        List<File> createdGifs = FFMPEGService.createGifs(targetImages, palettes, "0.5", pathToParentFolder);
+
+        List<File> listedFiles = Arrays.asList(new File(pathToParentFolder).listFiles(((dir, name) -> !name.contains("gif-maker"))));
+        listedFiles.removeAll(createdGifs);
+        listedFiles.remove(new File("backup"));
+
+        for (File fileToDelete : listedFiles) {
+            fileToDelete.delete();
+        }
 
     }
 
