@@ -21,6 +21,11 @@ import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 public class FileService {
 
+    /**
+     * Get path to running .jar
+     * @return
+     * @throws BackendException
+     */
     static String findParentFolder() throws BackendException {
         try {
             return new File(FileService.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile().getPath().replace('\\', '/');
@@ -30,6 +35,12 @@ public class FileService {
 
     }
 
+    /**
+     * List images in folder, sort them using Windows sorting algorithm.
+     * @param path
+     * @return
+     * @throws FileException
+     */
     static List<File> listImages(String path) throws FileException {
 
         FilenameFilter FILENAME_FILTER = (dir, name) -> {
@@ -53,6 +64,11 @@ public class FileService {
         return list;
     }
 
+    /**
+     * Check if all input images have same extension.
+     * @param list
+     * @return
+     */
     public static boolean checkExtension(List<File> list) {
         String firstExtension = getExtension(list.get(0).getName());
         for (File file : list) {
@@ -63,6 +79,9 @@ public class FileService {
         return true;
     }
 
+    /**
+     * Emulates Windows Explorer sorting.
+     */
     static class WindowsExplorerStringComparator implements Comparator<String> {
         private String str1, str2;
         private int pos1, pos2, len1, len2;
@@ -154,6 +173,12 @@ public class FileService {
         }
     }
 
+    /**
+     * Create folder "Backup" and copy all input images there.
+     * @param runningPath
+     * @param images
+     * @throws BackendException
+     */
     public static void backupFiles(String runningPath, List<File> images) throws BackendException {
         File backupFolder = new File(runningPath + "\\backup");
         backupFolder.mkdir();
@@ -166,6 +191,12 @@ public class FileService {
         }
     }
 
+    /**
+     * Check if all files have same dimensions.
+     * @param images
+     * @return
+     * @throws BackendException
+     */
     public static boolean checkSizes(List<File> images) throws BackendException {
         BufferedImage firstImage;
         try {
@@ -191,6 +222,12 @@ public class FileService {
         return true;
     }
 
+    /**
+     * Get lowest dimension among images.
+     * @param listOfFiles
+     * @return
+     * @throws BackendException
+     */
     public static Dimension findLowestDimension(List<File> listOfFiles) throws BackendException {
         Dimension resolution = new Dimension();
         long minRes = 0;
@@ -212,6 +249,11 @@ public class FileService {
         return resolution;
     }
 
+    /**
+     * Convert all images to .jpg.
+     * @param targetImages
+     * @throws BackendException
+     */
     public static void formatImages(List<File> targetImages) throws BackendException {
         for (int i = 0; i < targetImages.size(); i++) {
             try {
@@ -227,6 +269,12 @@ public class FileService {
         }
     }
 
+    /**
+     * Check if all images are smaller than 1920:1080.
+     * @param images
+     * @return
+     * @throws BackendException
+     */
     public static boolean checkImagesForBigFiles(List<File> images) throws BackendException {
         for (File x : images) {
             BufferedImage image;

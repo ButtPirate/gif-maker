@@ -12,69 +12,113 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Main {
-    static String pathToParentFolder; //in windows format, e.g. C:\Users\Bpirate\Desktop\folder-with-images
+    /**
+     * In windows format, e.g. "C:\Users\Bpirate\Desktop\folder-with-images"
+     */
+    static String pathToParentFolder;
+
     static List<File> targetImages;
+
+    /**
+     * If true will use all possible combinations of palette modes and dither filters.
+     * If false, will use only best ones.
+     * Toggle using "--all-filters" or "-A" in args.
+     */
     public static boolean args_fullFilters = false;
+
+    /**
+     * Images per second.
+     * For example, "0.5" would mean change of picture every 2 seconds.
+     * Toggle using "-D [number]" in args, e.g. "-D 1", "-D 0.5"
+     */
     public static String args_delay = "0.5";
 
+    /**
+     * Ignore image format differences.
+     *
+     * By default, if one of the source images has different file format, an exception will be risen.
+     * This can be overridden by passing "--ignore-format" or "-I" in args.
+     *
+     * The exception is thrown as a warning to user, as real format of images is ignored in conversion process,
+     * and all files are converted to .jpg anyway.
+     */
+    public static boolean args_ignoreFileFormat = false ;
+
     public static void main(String[] args) throws BackendException, FileException {
+        // Parse passed args.
         parseArgs(args);
 
-        //Looking up path to running .jar
+        // Looking up path to running .jar.
         pathToParentFolder = FileService.findParentFolder();
 
-        //Listing images
+        // Listing all images in folder.
         targetImages = FileService.listImages(pathToParentFolder);
 
+        // Saving first filename for paste later.
         String firstFilename = FilenameUtils.getBaseName(targetImages.get(0).getName());
 
-        //Checking if all images have same extension
-        if (!FileService.checkExtension(targetImages)) {
-            throw new FileException("Not all images have same format!", new Exception());
+        // Check if all images have same extension.
+        if (!args_ignoreFileFormat) {
+            if (!FileService.checkExtension(targetImages)) {
+                throw new FileException("Not all images have same format!", new Exception());
+            }
         }
 
-        //Backup
+        // Backup.
         FileService.backupFiles(pathToParentFolder, targetImages);
 
-        //Unpack FFMPEG
+        // Unpack FFMPEG.
         ResourceService.exportResource("/ffmpeg.exe", pathToParentFolder);
 
-        //Check if all files have same resolution
+        // Check if all files have same resolution. Scale them to smallest one if they are not.
         if (!FileService.checkSizes(targetImages)) {
             System.out.println("Resizing images!");
             Dimension smallestDimension = FileService.findLowestDimension(targetImages);
-            FFMPEGService.resizeFilesToOneSize(targetImages, smallestDimension, pathToParentFolder);
+            FFMPEGService.resizeFilesToOneSize(targetImages, smallestDimension);
             targetImages = FileService.listImages(pathToParentFolder);
         }
 
+        // Check if there is no images bigger than 1920:1080. Scale them down if there are.
         if (!FileService.checkImagesForBigFiles(targetImages)) {
-            FFMPEGService.resizeBigFiles(targetImages, pathToParentFolder);
+            FFMPEGService.resizeBigFiles(targetImages);
             targetImages = FileService.listImages(pathToParentFolder);
         }
 
-        //generate palette files
-        List<File> palettes = FFMPEGService.createPalette(targetImages, pathToParentFolder);
+        // Generate palette files.
+        List<File> palettes = FFMPEGService.createPalette(targetImages);
 
-        List<File> createdGifs = FFMPEGService.createGifs(targetImages, palettes, args_delay, pathToParentFolder);
+        // Create .gifs!
+        List<File> createdGifs = FFMPEGService.createGifs(targetImages, palettes, args_delay);
 
+        // Deleting all temp files.
         List<File> listedFiles = Arrays.asList(new File(pathToParentFolder).listFiles(((dir, name) -> !name.contains("gif-maker"))));
         listedFiles.removeAll(createdGifs);
         listedFiles.remove(new File("backup"));
-
         for (File fileToDelete : listedFiles) {
             fileToDelete.delete();
         }
 
+        // Paste first filename to clipboard.
         setClipboardContent(firstFilename);
 
     }
 
+    /**
+     * Parse passed args params.
+     * On any exception default values will be used.
+     *
+     * @param args
+     */
     private static void parseArgs(String... args) {
         try {
             List<String> listArgs = Arrays.asList(args);
 
             if (listArgs.contains("--all-filters") || listArgs.contains("-A")) {
                 args_fullFilters = true;
+            }
+
+            if (listArgs.contains("--ignore-format") || listArgs.contains("-I")) {
+                args_ignoreFileFormat = true;
             }
 
             if (listArgs.contains("-D")) {
@@ -91,6 +135,11 @@ public class Main {
 
     }
 
+    /**
+     * Set system clipboard contents to the name of the first file for convenient renaming later.
+     *
+     * @param content
+     */
     private static void setClipboardContent(String content) {
         Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringSelection stringSelection = new StringSelection(content);

@@ -16,7 +16,15 @@ import java.util.List;
 import static ru.bpirate.DitherFilter.*;
 
 public class FFMPEGService {
-    public static void resizeFilesToOneSize(List<File> listOfFiles, Dimension smallestDimension, String runningPath) throws FileException, BackendException {
+    /**
+     * Resize all images to one resolution.
+     *
+     * @param listOfFiles
+     * @param smallestDimension smallest dimension, will be used as output resolution.
+     * @throws FileException
+     * @throws BackendException
+     */
+    public static void resizeFilesToOneSize(List<File> listOfFiles, Dimension smallestDimension) throws FileException, BackendException {
         for (File x : listOfFiles) {
             BufferedImage image = null;
             try {
@@ -35,12 +43,18 @@ public class FFMPEGService {
             builder.append("-q:v 1 "); //quality scale - the best
             builder.append("-vf \"scale=" + (int) smallestDimension.getWidth() + ":" + (int) smallestDimension.getHeight() + ":flags=lanczos" + ", format=rgba\" "); //resize filter
             builder.append(x.getName() + " -y"); //replace original image with scaled
-            CMDService.sendCmd(builder.toString(), runningPath);
+            CMDService.sendCmd(builder.toString(), Main.pathToParentFolder);
         }
 
     }
 
-    public static List<File> createPalette(List<File> targetImages, String runningPath) throws BackendException {
+    /**
+     * Create palette files.
+     * @param targetImages
+     * @return
+     * @throws BackendException
+     */
+    public static List<File> createPalette(List<File> targetImages) throws BackendException {
         List<String> palettes = new ArrayList<>();
         String[] allPalettes = {"diff", "full"};
         String[] bestPalettes = {"full"};
@@ -61,10 +75,10 @@ public class FFMPEGService {
 
             builder.append("-lavfi \"palettegen=stats_mode=" + currentPalette + "\" palette_" + currentPalette + ".png"); //current palette generation mode
 
-            CMDService.sendCmd(builder.toString(), runningPath); //send CMD command
+            CMDService.sendCmd(builder.toString(), Main.pathToParentFolder); //send CMD command
         }
 
-        File[] paletteFiles = new File(runningPath).listFiles((dir, name) -> { //list all generated palette files
+        File[] paletteFiles = new File(Main.pathToParentFolder).listFiles((dir, name) -> { //list all generated palette files
             String lowercaseName = name.toLowerCase();
             return lowercaseName.contains("palette");
         });
@@ -74,7 +88,15 @@ public class FFMPEGService {
 
     }
 
-    public static List<File> createGifs(List<File> targetImages, List<File> palettes, String delay, String runningPath) throws BackendException {
+    /**
+     * Create .gif files
+     * @param targetImages
+     * @param palettes
+     * @param delay
+     * @return
+     * @throws BackendException
+     */
+    public static List<File> createGifs(List<File> targetImages, List<File> palettes, String delay) throws BackendException {
         List<DitherFilter> ditherFilters;
         DitherFilter[] allDitherFilters = {NONE, BAYER1, BAYER2, BAYER5, FLOYDSTEINBERG, SIERRA, SIERRA4A};
         DitherFilter[] bestDitherFilters = {NONE, BAYER5};
@@ -102,9 +124,9 @@ public class FFMPEGService {
                 builder.append("-y ");
                 builder.append(outputFilename);
 
-                CMDService.sendCmd(builder.toString(), runningPath);
+                CMDService.sendCmd(builder.toString(), Main.pathToParentFolder);
 
-                File createdGif = new File(runningPath + outputFilename);
+                File createdGif = new File(Main.pathToParentFolder + outputFilename);
                 result.add(createdGif);
 
             }
@@ -132,7 +154,14 @@ public class FFMPEGService {
 
     }
 
-    public static void resizeBigFiles(List<File> listOfFiles, String runningPath) throws FileException, BackendException {
+    /**
+     * If any of the files in list are bigger than 1920 wide - scale them down.
+     * If resulting image is still higher than 1080 - scale them again, by height.
+     * @param listOfFiles
+     * @throws FileException
+     * @throws BackendException
+     */
+    public static void resizeBigFiles(List<File> listOfFiles) throws FileException, BackendException {
         for (File x : listOfFiles) {
             BufferedImage image = null;
             try {
@@ -148,7 +177,7 @@ public class FFMPEGService {
                 builder.append("-q:v 1 "); //quality scale - the best
                 builder.append("-vf \"scale=1920:-1:flags=lanczos" + ", format=rgba\" "); //resize filter
                 builder.append(x.getName() + " -y"); //replace original image with scaled
-                CMDService.sendCmd(builder.toString(), runningPath);
+                CMDService.sendCmd(builder.toString(), Main.pathToParentFolder);
 
                 x = new File(x.getName());
                 try {
@@ -165,7 +194,7 @@ public class FFMPEGService {
                 builder.append("-q:v 1 "); //quality scale - the best
                 builder.append("-vf \"scale=-1:1080:flags=lanczos" + ", format=rgba\" "); //resize filter
                 builder.append(x.getName() + " -y"); //replace original image with scaled
-                CMDService.sendCmd(builder.toString(), runningPath);
+                CMDService.sendCmd(builder.toString(), Main.pathToParentFolder);
             }
         }
 
