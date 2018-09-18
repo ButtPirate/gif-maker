@@ -1,0 +1,14 @@
+### CHANGELOG ###
+
+:: { ver. 2.1 } - 9/18/2018
+ * [Fixed] - conversion won't fail if image filenames have spaces in them (issue #11).
+ * [Improved] - app can now be debugged properly without packaging to .jar (working directory will be "target").
+
+:: { ver. 2.0.1 } - 8/15/2018
+ * [Improved] - Added readme via Github.
+
+:: { ver. 2 } - 8/15/2018
+ * Complete overhaul, new features and slightly less shitty code.
+
+:: { ver. 1 } - 7/23/2017
+ * Old version that did not backup files and was poorly written.
