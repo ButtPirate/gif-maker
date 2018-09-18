@@ -261,7 +261,7 @@ public class FileService {
                 BufferedImage newBufferedImage = new BufferedImage(bufferedImage.getWidth(),
                         bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
                 newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0, Color.WHITE, null);
-                ImageIO.write(newBufferedImage, "jpg", new File(String.format("%03d"+".jpg", i)));
+                ImageIO.write(newBufferedImage, "jpg", new File(Main.pathToParentFolder + "\\" + String.format("%03d"+".jpg", i)));
             } catch (IOException e) {
                 throw new BackendException("Could not convert images to .jpg!", e);
             }
