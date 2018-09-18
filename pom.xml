@@ -19,7 +19,7 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
+                <artifactId>maven-assembly-plugin</artifactId> <!-- to create .jar use "assembly:single" -->
                 <configuration>
                     <archive>
                         <manifest>

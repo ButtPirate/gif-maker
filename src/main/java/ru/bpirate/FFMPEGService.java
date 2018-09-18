@@ -55,7 +55,7 @@ public class FFMPEGService {
      * @throws BackendException
      */
     public static List<File> createPalette(List<File> targetImages) throws BackendException {
-        List<String> palettes = new ArrayList<>();
+        List<String> palettes;
         String[] allPalettes = {"diff", "full"};
         String[] bestPalettes = {"full"};
 
