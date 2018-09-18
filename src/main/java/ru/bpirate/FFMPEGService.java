@@ -39,10 +39,10 @@ public class FFMPEGService {
 
             StringBuilder builder = new StringBuilder();
             builder.append("ffmpeg "); //ffmpeg call
-            builder.append("-i " + x.getName() + " "); //input is the file
+            builder.append("-i \"" + x.getName() + "\" "); //input is the file
             builder.append("-q:v 1 "); //quality scale - the best
             builder.append("-vf \"scale=" + (int) smallestDimension.getWidth() + ":" + (int) smallestDimension.getHeight() + ":flags=lanczos" + ", format=rgba\" "); //resize filter
-            builder.append(x.getName() + " -y"); //replace original image with scaled
+            builder.append("\"" + x.getName() + "\" -y"); //replace original image with scaled
             CMDService.sendCmd(builder.toString(), Main.pathToParentFolder);
         }
 
@@ -70,7 +70,7 @@ public class FFMPEGService {
             builder.append("ffmpeg -f image2 "); //call FFMPEG
 
             for (File x : targetImages) { //all target images as input
-                builder.append("-i " + x.getName() + " ");
+                builder.append("-i \"" + x.getName() + "\" ");
             }
 
             builder.append("-lavfi \"palettegen=stats_mode=" + currentPalette + "\" palette_" + currentPalette + ".png"); //current palette generation mode
@@ -122,7 +122,7 @@ public class FFMPEGService {
                 builder.append("-lavfi \"paletteuse=dither="+ditherFilter.getFullFilter()+"\" "); //specify paletteuse dither filter
                 String outputFilename = generateFilename(palette, ditherFilter);
                 builder.append("-y ");
-                builder.append(outputFilename);
+                builder.append("\"" + outputFilename + "\"");
 
                 CMDService.sendCmd(builder.toString(), Main.pathToParentFolder);
 
@@ -173,10 +173,10 @@ public class FFMPEGService {
             if (image.getWidth() > 1920) {
                 StringBuilder builder = new StringBuilder();
                 builder.append("ffmpeg "); //ffmpeg call
-                builder.append("-i " + x.getName() + " "); //input is the file
+                builder.append("-i \"" + x.getName() + "\" "); //input is the file
                 builder.append("-q:v 1 "); //quality scale - the best
                 builder.append("-vf \"scale=1920:-1:flags=lanczos" + ", format=rgba\" "); //resize filter
-                builder.append(x.getName() + " -y"); //replace original image with scaled
+                builder.append("\"" + x.getName() + "\" -y"); //replace original image with scaled
                 CMDService.sendCmd(builder.toString(), Main.pathToParentFolder);
 
                 x = new File(x.getName());
@@ -190,10 +190,10 @@ public class FFMPEGService {
             if (image.getHeight() > 1080) {
                 StringBuilder builder = new StringBuilder();
                 builder.append("ffmpeg "); //ffmpeg call
-                builder.append("-i " + x.getName() + " "); //input is the file
+                builder.append("-i \"" + x.getName() + "\" "); //input is the file
                 builder.append("-q:v 1 "); //quality scale - the best
                 builder.append("-vf \"scale=-1:1080:flags=lanczos" + ", format=rgba\" "); //resize filter
-                builder.append(x.getName() + " -y"); //replace original image with scaled
+                builder.append("\"" + x.getName() + "\" -y"); //replace original image with scaled
                 CMDService.sendCmd(builder.toString(), Main.pathToParentFolder);
             }
         }
