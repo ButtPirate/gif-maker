@@ -20,6 +20,12 @@ public class Main {
     static List<File> targetImages;
 
     /**
+     * Will either be copied to clipboard (if multiple variations of .gif are created),
+     * or will be used as an output filename.
+     */
+    public static String firstFilename;
+
+    /**
      * If true will use all possible combinations of palette modes and dither filters.
      * If false, will use only best ones.
      * Toggle using "--all-filters" or "-A" in args.
@@ -54,8 +60,7 @@ public class Main {
         // Listing all images in folder.
         targetImages = FileService.listImages(pathToParentFolder);
 
-        // Saving first filename for paste later.
-        String firstFilename = FilenameUtils.getBaseName(targetImages.get(0).getName());
+        firstFilename = FilenameUtils.getBaseName(targetImages.get(0).getName());
 
         // Check if all images have same extension.
         if (!args_ignoreFileFormat) {

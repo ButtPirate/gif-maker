@@ -99,7 +99,7 @@ public class FFMPEGService {
     public static List<File> createGifs(List<File> targetImages, List<File> palettes, String delay) throws BackendException {
         List<DitherFilter> ditherFilters;
         DitherFilter[] allDitherFilters = {NONE, BAYER1, BAYER2, BAYER5, FLOYDSTEINBERG, SIERRA, SIERRA4A};
-        DitherFilter[] bestDitherFilters = {NONE, BAYER5};
+        DitherFilter[] bestDitherFilters = {BAYER5};
         if (Main.args_fullFilters) {
             ditherFilters = Arrays.asList(allDitherFilters);
         } else {
@@ -120,7 +120,9 @@ public class FFMPEGService {
 
                 builder.append("-i "+palette.getName() + " "); //palette input
                 builder.append("-lavfi \"paletteuse=dither="+ditherFilter.getFullFilter()+"\" "); //specify paletteuse dither filter
-                String outputFilename = generateFilename(palette, ditherFilter);
+                String outputFilename = Main.args_fullFilters ?
+                        generateFilenameForSingleOutput(Main.firstFilename)
+                        : generateFilenameForMultipleOutputs(palette, ditherFilter);
                 builder.append("-y ");
                 builder.append("\"" + outputFilename + "\"");
 
@@ -142,7 +144,7 @@ public class FFMPEGService {
      * @param filter
      * @return
      */
-    private static String generateFilename(File palette, DitherFilter filter) {
+    private static String generateFilenameForMultipleOutputs(File palette, DitherFilter filter) {
         StringBuilder builder = new StringBuilder();
         builder.append("gif-maker_");
         builder.append(FilenameUtils.getBaseName(palette.getName()));
@@ -152,6 +154,19 @@ public class FFMPEGService {
 
         return builder.toString();
 
+    }
+
+    /**
+     * Generate output filename based on original filename of a single input.
+     * @param firstFilename
+     * @return
+     */
+    private static String generateFilenameForSingleOutput(String firstFilename) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(FilenameUtils.getBaseName(firstFilename));
+        builder.append(".gif");
+
+        return builder.toString();
     }
 
     /**
