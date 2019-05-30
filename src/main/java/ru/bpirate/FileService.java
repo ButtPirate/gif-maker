@@ -292,4 +292,14 @@ public class FileService {
 
     }
 
+    /**
+     * Check if FFMPEG executable already present in folder
+     * @param path
+     * @return
+     */
+    public static boolean checkFFMPEG(String path) {
+        File ffmpegExecutable = new File(path+"\\ffmpeg.exe");
+        return ffmpegExecutable.exists();
+    }
+
 }

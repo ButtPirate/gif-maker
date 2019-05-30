@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,7 +49,12 @@ public class Main {
      * The exception is thrown as a warning to user, as real format of images is ignored in conversion process,
      * and all files are converted to .jpg anyway.
      */
-    public static boolean args_ignoreFileFormat = false ;
+    public static boolean args_ignoreFileFormat = false;
+
+    /**
+     * Kepp ffmpeg executable after conversion
+     */
+    public static boolean args_keepFFMPEG = false;
 
     public static void main(String[] args) throws BackendException, FileException {
         // Parse passed args.
@@ -73,7 +79,9 @@ public class Main {
         FileService.backupFiles(pathToParentFolder, targetImages);
 
         // Unpack FFMPEG.
-        ResourceService.exportResource("/ffmpeg.exe", pathToParentFolder);
+        if (!FileService.checkFFMPEG(pathToParentFolder)) {
+            ResourceService.exportResource("/ffmpeg.exe", pathToParentFolder);
+        }
 
         // Check if all files have same resolution. Scale them to smallest one if they are not.
         if (!FileService.checkSizes(targetImages)) {
@@ -96,7 +104,14 @@ public class Main {
         List<File> createdGifs = FFMPEGService.createGifs(targetImages, palettes, args_delay);
 
         // Deleting all temp files.
-        List<File> listedFiles = Arrays.asList(new File(pathToParentFolder).listFiles(((dir, name) -> !name.contains("gif-maker"))));
+        List<File> listedFiles = new ArrayList(Arrays.asList(new File(pathToParentFolder).listFiles(((dir, name) -> !name.contains("gif-maker")))));
+
+        // If arg was passed, don't delete FFMPEG executable
+        if (args_keepFFMPEG) {
+            File ffmpegFile = listedFiles.stream().filter(file -> "ffmpeg.exe".equals(file.getName())).findAny().orElse(null);
+            listedFiles.remove(ffmpegFile);
+        }
+
         listedFiles.removeAll(createdGifs);
         listedFiles.remove(new File("backup"));
         for (File fileToDelete : listedFiles) {
@@ -131,11 +146,16 @@ public class Main {
                 args_delay = listArgs.get(++indexOfOption);
             }
 
+            if (listArgs.contains("-K")) {
+                args_keepFFMPEG = true;
+            }
+
         } catch (Exception e) {
             System.out.println("Caught error trying to parse command line args! Using defaults...");
             System.out.println(e.toString());
             args_fullFilters = false;
             args_delay = "0.5";
+            args_keepFFMPEG = false;
         }
 
     }
