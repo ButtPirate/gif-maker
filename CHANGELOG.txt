@@ -1,5 +1,10 @@
 ### CHANGELOG ###
 
+:: { ver. 2.2 } - 05/31/2019
+ * [Improved] - added option to keep FFMPEG executable (issue #12)
+ * [Changed] - changed default conversion behaviour - only 1 .gif file will be generated, if no args were passed (issue #13)
+
+
 :: { ver. 2.1 } - 9/18/2018
  * [Fixed] - conversion won't fail if image filenames have spaces in them (issue #11).
  * [Improved] - app can now be debugged properly without packaging to .jar (working directory will be "target").
